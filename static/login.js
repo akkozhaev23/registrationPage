@@ -7,5 +7,6 @@ loginBtn.addEventListener('click', e => {
     fetch('/login', {
         method: 'POST',
         body: new FormData(loginForm)
-    })
+    }).then(response => response.json())
+        .then(data => alert(data.message))
 })

@@ -1,4 +1,3 @@
-const { response } = require('express')
 const express = require('express')
 const formidable = require('express-formidable')
 
@@ -7,18 +6,39 @@ const app = express()
 app.use(express.json())
 app.use(formidable())
 
+const responseObj = {
+
+}
+
+
 const db = {
 
 }
 
 
-
 app.post('/login', (req, res) => {
-    console.log(req.fields)
-    db[req.fields.userName] = {
-        password: req.fields.userPassword,
-        email: req.fields.userEmail
+    for(let key in db) {
+        if(req.fields.userName in db && req.fields.userPassword === db[key].password) {
+            responseObj.message = `Welcome, ${req.fields.userName}!`
+        } else {
+            responseObj.message = 'invalid login or password!'
+        }
+        console.log(db[key].password)
+        console.log(key)
     }
+
+    // for(let key in db) {
+    //     if(key !== req.fields.userName) {
+    //         responseObj.message = `invalid login`
+    //     } else if (db[key].password !== req.fields.userPassword) {
+    //         responseObj.message = `invalid password`
+    //     } else {
+    //         responseObj.message = `Welcome, ${req.fields.userName}`
+    //     }
+    //     console.log(key.password)
+    // }
+
+    res.json(responseObj)
 })
 
 app.post('/signUp', (req, res) => {
@@ -27,14 +47,14 @@ app.post('/signUp', (req, res) => {
         email: req.fields.userEmail
     }
 
-    const responseObj = {
-
-    }
+    console.log(db)
     
     responseObj.message = `New user ${req.fields.userName} is created`
 
     res.json(responseObj)
 })
+
+
 
 app.use(express.static('static'))
 
