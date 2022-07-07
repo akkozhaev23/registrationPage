@@ -1,5 +1,6 @@
 const express = require('express')
 const formidable = require('express-formidable')
+const fs = require('fs')
 
 const app = express()
 
@@ -17,39 +18,49 @@ const db = {
 
 
 app.post('/login', (req, res) => {
-    for(let key in db) {
-        if(req.fields.userName in db && req.fields.userPassword === db[key].password) {
+    let base = fs.readFileSync('users.json', 'utf-8', (err, data) => {
+        if(err) {
+            console.log(err)
+        }
+        return data
+    })
+
+    let dannie = JSON.parse(base)
+
+    console.log(dannie)
+
+    for (let key in dannie) {
+        if (key === req.fields.userName && req.fields.userPassword === dannie[key]) {
             responseObj.message = `Welcome, ${req.fields.userName}!`
         } else {
             responseObj.message = 'invalid login or password!'
         }
-        console.log(db[key].password)
-        console.log(key)
-    }
 
-    // for(let key in db) {
-    //     if(key !== req.fields.userName) {
-    //         responseObj.message = `invalid login`
-    //     } else if (db[key].password !== req.fields.userPassword) {
-    //         responseObj.message = `invalid password`
-    //     } else {
-    //         responseObj.message = `Welcome, ${req.fields.userName}`
-    //     }
-    //     console.log(key.password)
-    // }
+    }
 
     res.json(responseObj)
 })
 
 app.post('/signUp', (req, res) => {
-    db[req.fields.userName] = {
-        password: req.fields.userPassword,
-        email: req.fields.userEmail
+    let base = fs.readFileSync('users.json', 'utf-8')
+
+    let dannie = JSON.parse(base)
+    
+    if (dannie.hasOwnProperty(req.fields.userName)) {
+        responseObj.message = `User ${req.fields.userName} in use!`
+    } else {
+        let uName = req.fields.userName
+        let pass = req.fields.userPassword
+        let obj2 = {[uName]: pass}
+        Object.assign(dannie, obj2)
+
+        let users = JSON.stringify(dannie)
+
+        fs.writeFileSync('users.json', users, err => console.log(err))
+
+        responseObj.message = `New user ${req.fields.userName} is created`
     }
 
-    console.log(db)
-    
-    responseObj.message = `New user ${req.fields.userName} is created`
 
     res.json(responseObj)
 })
